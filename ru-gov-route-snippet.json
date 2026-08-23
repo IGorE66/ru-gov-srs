@@ -2,7 +2,7 @@
 {
   "type": "remote",
   "tag": "ru-gov",
-  "url": "https://raw.githubusercontent.com/<твой-github-юзернейм>/<твой-репозиторий>/main/ru-gov.srs",
+  "url": "https://raw.githubusercontent.com/IGorE66/ru-gov-srs/main/ru-gov.srs",
   "update_interval": "24h0m0s"
 }
 
