@@ -1,1 +1,43 @@
+name: Build ru-gov rule-set
 
+on:
+  schedule:
+    # 03:30 UTC daily — after C24Be's own daily blacklist regen
+    - cron: '30 3 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download source blacklists
+        run: |
+          curl -sSL -o blacklist-v4.txt https://raw.githubusercontent.com/C24Be/AS_Network_List/main/blacklists/blacklist-v4.txt
+          curl -sSL -o blacklist-v6.txt https://raw.githubusercontent.com/C24Be/AS_Network_List/main/blacklists/blacklist-v6.txt
+
+      - name: Convert to sing-box source JSON
+        run: python3 convert.py
+
+      - name: Install sing-box CLI
+        run: |
+          SB_TAG=$(curl -sSL https://api.github.com/repos/SagerNet/sing-box/releases/latest | grep '"tag_name"' | cut -d '"' -f4)
+          SB_VER=${SB_TAG#v}
+          curl -sSL -o sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SB_TAG}/sing-box-${SB_VER}-linux-amd64.tar.gz"
+          tar xzf sing-box.tar.gz
+          sudo mv "sing-box-${SB_VER}-linux-amd64/sing-box" /usr/local/bin/sing-box
+
+      - name: Compile rule-set
+        run: sing-box rule-set compile ru-gov-source.json -o ru-gov.srs
+
+      - name: Commit updated .srs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ru-gov.srs
+          git diff --cached --quiet || git commit -m "auto: update ru-gov.srs $(date -u +%F)"
+          git push
