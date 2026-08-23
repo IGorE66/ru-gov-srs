@@ -1,0 +1,15 @@
+// В route.rule_set — добавить рядом с остальными rule_set (geosite-ads, geosite-private и т.д.):
+{
+  "type": "remote",
+  "tag": "ru-gov",
+  "url": "https://raw.githubusercontent.com/<твой-github-юзернейм>/<твой-репозиторий>/main/ru-gov.srs",
+  "update_interval": "24h0m0s"
+}
+
+// В route.rules — вставить СРАЗУ ПОСЛЕ "ip_is_private": true
+// и ДО "domain_suffix": ".ru" / "geosite-category-ru",
+// чтобы IP-блок госсетей срабатывал раньше, чем правило "все .ru — direct":
+{
+  "rule_set": "ru-gov",
+  "action": "reject"
+}
